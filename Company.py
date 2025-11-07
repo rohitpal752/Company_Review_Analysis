@@ -24,12 +24,16 @@ def load_mock_data():
         'Avg_Rating': np.round(np.random.uniform(2.5, 4.8, size=N), 1),
         'Work_Life_Balance_Score': np.random.randint(1, 6, size=N), # 1 (Bad) to 5 (Excellent)
         'Culture_Score': np.random.randint(1, 6, size=N),
-        'Review_Snippet': [
-            "Fast-paced but rewarding.", "Stable environment, good benefits.", 
-            "High pressure, rapid growth.", "Excellent creative freedom.",
-            "Traditional structure, clear roles.", "Mission-driven and collaborative.",
-            "Entry-level focus, shift work.", "Exciting but chaotic.",
-        ] * (N // 8 + 1)[:N],
+        # FIX APPLIED HERE: Added parentheses around the list multiplication 
+        # to ensure the list is repeated *before* it is sliced by [:N].
+        'Review_Snippet': (
+            [
+                "Fast-paced but rewarding.", "Stable environment, good benefits.", 
+                "High pressure, rapid growth.", "Excellent creative freedom.",
+                "Traditional structure, clear roles.", "Mission-driven and collaborative.",
+                "Entry-level focus, shift work.", "Exciting but chaotic.",
+            ] * (N // 8 + 1)
+        )[:N],
         'Recommend': np.random.choice(['Yes', 'No', 'Neutral'], size=N, p=[0.5, 0.2, 0.3])
     }
     # Add a Grouped Company Name column to ensure unique keys for plotting
