@@ -13,23 +13,32 @@ def load_mock_data():
     companies = [
         "TechNova Solutions", "Global Finance Hub", "Agile Innovators", 
         "Creative Digital Labs", "Industrial Dynamics Inc.", "Green Energy Future", 
-        "Local Retail Chain", "E-commerce Startup"
+        "Local Retail Chain", "E-commerce Startup",
+        "BioTech Pioneers", "Luxury Goods Co", "Edu-Tech Hub", "Aero Space Inc."
     ]
+    # Ensure a larger dataset for better visualizations
+    N = 30 
     data = {
-        'Company Name': companies,
-        'company_type': np.random.choice(['Startup', 'Medium', 'Corporate', 'Large'], size=len(companies)),
-        'Avg_Rating': np.round(np.random.uniform(2.5, 4.8, size=len(companies)), 1),
-        'Work_Life_Balance_Score': np.random.randint(2, 5, size=len(companies)), # 1 (Bad) to 5 (Excellent)
-        'Culture_Score': np.random.randint(2, 5, size=len(companies)),
+        'Company Name': [np.random.choice(companies) for _ in range(N)],
+        'company_type': np.random.choice(['Startup', 'Medium', 'Corporate', 'Large'], size=N, p=[0.3, 0.3, 0.2, 0.2]),
+        'Avg_Rating': np.round(np.random.uniform(2.5, 4.8, size=N), 1),
+        'Work_Life_Balance_Score': np.random.randint(1, 6, size=N), # 1 (Bad) to 5 (Excellent)
+        'Culture_Score': np.random.randint(1, 6, size=N),
         'Review_Snippet': [
             "Fast-paced but rewarding.", "Stable environment, good benefits.", 
             "High pressure, rapid growth.", "Excellent creative freedom.",
             "Traditional structure, clear roles.", "Mission-driven and collaborative.",
             "Entry-level focus, shift work.", "Exciting but chaotic.",
-        ],
-        'Recommend': np.random.choice(['Yes', 'No', 'Neutral'], size=len(companies), p=[0.5, 0.2, 0.3])
+        ] * (N // 8 + 1)[:N],
+        'Recommend': np.random.choice(['Yes', 'No', 'Neutral'], size=N, p=[0.5, 0.2, 0.3])
     }
-    return pd.DataFrame(data)
+    # Add a Grouped Company Name column to ensure unique keys for plotting
+    df_temp = pd.DataFrame(data).drop_duplicates(subset=['Company Name'], keep='first')
+    # Re-generate if necessary to hit N rows, or just use the unique set
+    if len(df_temp) < N:
+         df_temp = pd.DataFrame(data).head(N)
+    return df_temp
+
 
 df = load_mock_data()
 
@@ -103,6 +112,7 @@ with tab_analysis:
     st.header("Exploratory Data Analysis Overview")
     st.markdown("This tab showcases key insights from the initial data cleaning and analysis steps performed in the Jupyter notebook.")
     
+    # Row 1: Data Sample and Treemap
     col1, col2 = st.columns(2)
     
     with col1:
@@ -117,7 +127,7 @@ with tab_analysis:
         recommend_counts = df.groupby(['Recommend', 'company_type']).size().reset_index(name='Count')
         
         try:
-            fig = px.treemap(
+            fig_treemap = px.treemap(
                 recommend_counts,
                 path=['Recommend', 'company_type'],
                 values='Count',
@@ -127,11 +137,55 @@ with tab_analysis:
                     'Yes': 'green', 'No': 'red', 'Neutral': 'blue'
                 }
             )
-            fig.update_layout(margin=dict(t=30, l=0, r=0, b=0))
-            st.plotly_chart(fig, use_container_width=True)
-        except Exception:
-            st.warning("Could not render Plotly chart due to dependency issues. Showing raw counts instead.")
+            fig_treemap.update_layout(margin=dict(t=30, l=0, r=0, b=0), height=300)
+            st.plotly_chart(fig_treemap, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Could not render Treemap chart: {e}")
             st.dataframe(recommend_counts, use_container_width=True)
+
+    st.markdown("---")
+    
+    # Row 2: New Visualizations
+    col3, col4 = st.columns(2)
+    
+    with col3:
+        st.subheader("Distribution of Overall Ratings")
+        
+        try:
+            fig_hist = px.histogram(
+                df,
+                x='Avg_Rating',
+                nbins=10,
+                title='Frequency of Average Company Ratings',
+                color_discrete_sequence=['#4B0082'] # Indigo color
+            )
+            fig_hist.update_layout(xaxis_title="Average Rating (1-5)", yaxis_title="Number of Companies", height=300)
+            st.plotly_chart(fig_hist, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Could not render Rating Distribution chart: {e}")
+
+    with col4:
+        st.subheader("Culture Score Comparison by Company Type")
+
+        try:
+            fig_box = px.box(
+                df,
+                x='company_type',
+                y='Culture_Score',
+                color='company_type',
+                title='Culture Score Distribution (1-5)',
+                color_discrete_map={
+                    'Startup': '#FF5733', 
+                    'Medium': '#33FF57', 
+                    'Corporate': '#3357FF', 
+                    'Large': '#FF33A1'
+                }
+            )
+            fig_box.update_layout(xaxis_title="Company Type", yaxis_title="Culture Score", height=300)
+            st.plotly_chart(fig_box, use_container_width=True)
+        except Exception as e:
+            st.warning(f"Could not render Culture Score Box Plot: {e}")
+
 
 with tab_prediction:
     st.header("Find Your Perfect Company Match")
@@ -170,7 +224,7 @@ with tab_prediction:
     # --- Main Section for Company Selection & Prediction ---
     st.subheader("Select a Company for Personalized Review")
     
-    company_names = df['Company Name'].tolist()
+    company_names = df['Company Name'].unique().tolist()
     selected_company = st.selectbox(
         "Choose a Company:",
         company_names
