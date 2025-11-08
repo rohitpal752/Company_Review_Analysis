@@ -344,8 +344,7 @@ with TAB_INSIGHTS:
         st.markdown(f"- {b}")
 
     st.divider()
-    txt = "### Key Insights
-
-txt = "### Key Insights\n\n" + "\n".join([f"- {b}" for b in bullets])
+txt = "### Key Insights\n\n" + "\n".join(["- point 1", "- point 2"])
+print(txt)
 
 st.caption("Built with ❤️ Streamlit + Plotly + Pandas — Single Upload Edition.")
