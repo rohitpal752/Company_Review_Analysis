@@ -2,7 +2,4 @@ streamlit
 pandas
 numpy
 plotly
-matplotlib
-seaborn
 scikit-learn
-fpdf
