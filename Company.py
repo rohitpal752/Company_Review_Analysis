@@ -346,8 +346,6 @@ with TAB_INSIGHTS:
     st.divider()
     txt = "### Key Insights
 
-" + "
-".join([f"- {b}" for b in bullets])
-    st.download_button("📥 Download Insights (TXT)", txt.encode(), file_name="insights_summary.txt")
+txt = "### Key Insights\n\n" + "\n".join([f"- {b}" for b in bullets])
 
 st.caption("Built with ❤️ Streamlit + Plotly + Pandas — Single Upload Edition.")
