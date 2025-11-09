@@ -1,12 +1,4 @@
 streamlit
 pandas
 numpy
-plotly
-matplotlib
-seaborn
-wordcloud
-scikit-learn
-nltk
-prophet
-python-dateutil
-pillow
+plotly-express
